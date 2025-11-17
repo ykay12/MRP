@@ -7,13 +7,31 @@ import at.technikum.server.http.Request;
 import at.technikum.server.http.Response;
 import at.technikum.server.http.Status;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public abstract class Controller {
+
+    private static final ObjectMapper objectMapper;
+
+    static {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(formatter));
+
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(javaTimeModule);
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 
     public abstract Response handle(Request request);
 
     protected <T> T toObject(String content, Class<T> valueType) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(content, valueType);
         } catch (Exception ex) {
@@ -38,7 +56,6 @@ public abstract class Controller {
     }
 
     protected Response json(Object o, Status status) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             String json = objectMapper.writeValueAsString(o);
             return r(status, ContentType.APPLICATION_JSON, json);
