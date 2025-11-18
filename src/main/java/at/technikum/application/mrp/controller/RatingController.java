@@ -66,8 +66,8 @@ public class RatingController extends Controller {
         String userId = RequestContext.getCurrentUserId();
 
         // Debug logging
-        System.out.println("DEBUG RatingController.createRating: userId from context = " + userId);
-        System.out.println("DEBUG RatingController.createRating: current user = " + RequestContext.getCurrentUser());
+        // System.out.println("DEBUG RatingController.createRating: userId from context = " + userId);
+        // System.out.println("DEBUG RatingController.createRating: current user = " + RequestContext.getCurrentUser());
 
         if (userId == null || userId.isEmpty()) {
             System.err.println("ERROR: userId is null or empty in RatingController!");

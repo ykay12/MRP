@@ -112,7 +112,7 @@ public class DbRatingRepository implements RatingRepository {
             stmt.setString(3, rating.getUserId());
             stmt.setInt(4, rating.getStars());
             stmt.setString(5, rating.getComment());
-            stmt.setTimestamp(6, Timestamp.valueOf(rating.getTimestamp()));
+            stmt.setTimestamp(6, Timestamp.valueOf(rating.getCreatedAt()));
             stmt.setBoolean(7, rating.isConfirmed());
             stmt.setInt(8, rating.getLikes());
             stmt.executeUpdate();
@@ -158,7 +158,7 @@ public class DbRatingRepository implements RatingRepository {
         rating.setUserId(rs.getString("user_id"));
         rating.setStars(rs.getInt("stars"));
         rating.setComment(rs.getString("comment"));
-        rating.setTimestamp(rs.getTimestamp("timestamp").toLocalDateTime());
+        rating.setCreatedAt(rs.getTimestamp("timestamp").toLocalDateTime());
         rating.setConfirmed(rs.getBoolean("confirmed"));
         rating.setLikes(rs.getInt("likes"));
         return rating;
