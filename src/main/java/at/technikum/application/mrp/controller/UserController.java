@@ -5,6 +5,8 @@ import at.technikum.application.mrp.dto.LoginRequest;
 import at.technikum.application.mrp.dto.RegisterRequest;
 import at.technikum.application.mrp.dto.TokenResponse;
 import at.technikum.application.mrp.dto.UserProfileResponse;
+import at.technikum.application.mrp.dto.UserProfileUpdateRequest;
+import at.technikum.application.mrp.middleware.RequestContext;
 import at.technikum.application.mrp.model.User;
 import at.technikum.application.mrp.service.RatingService;
 import at.technikum.application.mrp.service.UserService;
@@ -48,6 +50,13 @@ public class UserController extends Controller {
             }
         }
 
+        if (method.equals(Method.PUT.getVerb())) {
+            if (path.matches("/api/users/[^/]+/profile")) {
+                String userId = extractUserId(path);
+                return updateProfile(userId, request);
+            }
+        }
+
         return status(Status.NOT_FOUND);
     }
 
@@ -79,6 +88,33 @@ public class UserController extends Controller {
         profile.setUsername(user.getUsername());
         profile.setTotalRatings(totalRatings);
         profile.setAverageScore(averageScore);
+        profile.setFavoriteGenre(user.getFavoriteGenre());
+
+        return json(profile, Status.OK);
+    }
+
+    private Response updateProfile(String userId, Request request) {
+        String authenticatedUserId = RequestContext.getCurrentUserId();
+
+        if (authenticatedUserId == null || !authenticatedUserId.equals(userId)) {
+            return text("Forbidden: You can only update your own profile", Status.UNAUTHORIZED);
+        }
+
+        UserProfileUpdateRequest updateRequest = toObject(request.getBody(), UserProfileUpdateRequest.class);
+
+        User user = userService.getUserById(userId);
+
+        if (updateRequest.getFavoriteGenre() != null) {
+            user.setFavoriteGenre(updateRequest.getFavoriteGenre());
+        }
+
+        User updatedUser = userService.updateProfile(user);
+
+        UserProfileResponse profile = new UserProfileResponse();
+        profile.setUsername(updatedUser.getUsername());
+        profile.setTotalRatings(updatedUser.getTotalRatings());
+        profile.setAverageScore(updatedUser.getAverageScore());
+        profile.setFavoriteGenre(updatedUser.getFavoriteGenre());
 
         return json(profile, Status.OK);
     }
@@ -89,6 +125,11 @@ public class UserController extends Controller {
     }
 
     private String extractUsername(String path) {
+        String[] parts = path.split("/");
+        return parts[3];
+    }
+
+    private String extractUserId(String path) {
         String[] parts = path.split("/");
         return parts[3];
     }

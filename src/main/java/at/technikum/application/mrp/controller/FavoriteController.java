@@ -2,6 +2,7 @@ package at.technikum.application.mrp.controller;
 
 import at.technikum.application.common.Controller;
 import at.technikum.application.mrp.dto.FavoriteRequest;
+import at.technikum.application.mrp.middleware.RequestContext;
 import at.technikum.application.mrp.model.Media;
 import at.technikum.application.mrp.service.FavoriteService;
 import at.technikum.server.http.Method;
@@ -40,20 +41,35 @@ public class FavoriteController extends Controller {
     }
 
     private Response addFavorite(Request request) {
-        String userId = getUserIdFromAuth(request);
+        String userId = RequestContext.getCurrentUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            return text("Unauthorized: User ID not found", Status.UNAUTHORIZED);
+        }
+
         FavoriteRequest req = toObject(request.getBody(), FavoriteRequest.class);
         favoriteService.addFavorite(userId, req.getMediaId());
         return status(Status.CREATED);
     }
 
     private Response removeFavorite(String mediaId, Request request) {
-        String userId = getUserIdFromAuth(request);
+        String userId = RequestContext.getCurrentUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            return text("Unauthorized: User ID not found", Status.UNAUTHORIZED);
+        }
+
         favoriteService.removeFavorite(userId, mediaId);
         return status(Status.OK);
     }
 
     private Response getFavorites(Request request) {
-        String userId = getUserIdFromAuth(request);
+        String userId = RequestContext.getCurrentUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            return text("Unauthorized: User ID not found", Status.UNAUTHORIZED);
+        }
+
         List<Media> favorites = favoriteService.getUserFavorites(userId);
         return json(favorites, Status.OK);
     }
@@ -61,9 +77,5 @@ public class FavoriteController extends Controller {
     private String extractMediaId(String path) {
         String[] parts = path.split("/");
         return parts[3];
-    }
-
-    private String getUserIdFromAuth(Request request) {
-        return "user-id-placeholder";
     }
 }

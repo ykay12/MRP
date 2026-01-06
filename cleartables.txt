@@ -1,0 +1,2 @@
+alle daten löschen
+docker exec -i mrp-postgresdb-1 psql -U swen1user -d mrpdb -c "TRUNCATE users, media, ratings, favorites, likes CASCADE;"

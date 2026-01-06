@@ -1,6 +1,7 @@
 package at.technikum.application.mrp.controller;
 
 import at.technikum.application.common.Controller;
+import at.technikum.application.mrp.middleware.RequestContext;
 import at.technikum.application.mrp.model.Media;
 import at.technikum.application.mrp.service.RecommendationService;
 import at.technikum.server.http.Method;
@@ -30,12 +31,13 @@ public class RecommendationController extends Controller {
     }
 
     private Response getRecommendations(Request request) {
-        String userId = getUserIdFromAuth(request);
+        String userId = RequestContext.getCurrentUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            return text("Unauthorized: User ID not found", Status.UNAUTHORIZED);
+        }
+
         List<Media> recommendations = recommendationService.getRecommendations(userId, 10);
         return json(recommendations, Status.OK);
-    }
-
-    private String getUserIdFromAuth(Request request) {
-        return "user-id-placeholder";
     }
 }
