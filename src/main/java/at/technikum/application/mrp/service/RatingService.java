@@ -34,7 +34,7 @@ public class RatingService {
         rating.setUserId(userId);
         rating.setStars(stars);
         rating.setComment(comment);
-        rating.setTimestamp(LocalDateTime.now());
+        rating.setCreatedAt(LocalDateTime.now());
         rating.setConfirmed(false);
         rating.setLikes(0);
 
@@ -106,7 +106,7 @@ public class RatingService {
         rating.setLikes(rating.getLikes() + 1);
         ratingRepository.update(rating);
     }
-
+    // average von sql ausrechnen lassen ?
     private void updateMediaAverageRating(String mediaId) {
         List<Rating> ratings = ratingRepository.findByMediaId(mediaId);
 

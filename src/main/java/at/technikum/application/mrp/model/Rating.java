@@ -6,10 +6,10 @@ import java.time.temporal.ChronoUnit;
 public class Rating {
     private String id;
     private String mediaId;
-    private String userId;
+    private String userId; // private user creator?
     private int stars;
     private String comment;
-    private LocalDateTime timestamp;
+    private LocalDateTime createdAt;
     private boolean confirmed;
     private int likes;
 
@@ -22,7 +22,7 @@ public class Rating {
         this.userId = userId;
         this.stars = stars;
         this.comment = comment;
-        this.timestamp = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        this.createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         this.confirmed = false;
         this.likes = 0;
     }
@@ -67,12 +67,12 @@ public class Rating {
         this.comment = comment;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public boolean isConfirmed() {
