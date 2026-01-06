@@ -1,0 +1,216 @@
+# MRP API - PowerShell Test Commands
+# Copy and paste these commands one by one in PowerShell
+
+## Setup
+$BASE_URL = "http://localhost:8080"
+
+## ===================================
+## 1. AUTHENTICATION
+## ===================================
+
+# Register User 1
+curl.exe -X POST http://localhost:8080/api/users/register `
+  -H "Content-Type: application/json" `
+  -d '{\"username\":\"testuser1\",\"password\":\"pass123\"}'
+
+# Register User 2
+curl.exe -X POST http://localhost:8080/api/users/register `
+  -H "Content-Type: application/json" `
+  -d '{\"username\":\"testuser2\",\"password\":\"pass456\"}'
+
+# Login User 1 (SAVE THE TOKEN!)
+curl.exe -X POST http://localhost:8080/api/users/login `
+  -H "Content-Type: application/json" `
+  -d '{\"username\":\"testuser1\",\"password\":\"pass123\"}'
+# Response: {"token":"testuser1-mrpToken"}
+# SET THIS: $TOKEN1 = "testuser1-mrpToken"
+
+# Login User 2 (SAVE THE TOKEN!)
+curl.exe -X POST http://localhost:8080/api/users/login `
+  -H "Content-Type: application/json" `
+  -d '{\"username\":\"testuser2\",\"password\":\"pass456\"}'
+# Response: {"token":"testuser2-mrpToken"}
+# SET THIS: $TOKEN2 = "testuser2-mrpToken"
+
+# Set tokens manually after getting them:
+$TOKEN1 = "testuser1-mrpToken"
+$TOKEN2 = "testuser2-mrpToken"
+
+# Login with Wrong Password (should fail)
+curl.exe -X POST http://localhost:8080/api/users/login `
+  -H "Content-Type: application/json" `
+  -d '{\"username\":\"testuser1\",\"password\":\"wrongpassword\"}'
+
+## ===================================
+## 2. MEDIA MANAGEMENT
+## ===================================
+
+# Create Media Entry (SAVE THE MEDIA_ID from response!)
+curl.exe -X POST http://localhost:8080/api/media `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN1" `
+  -d '{\"title\":\"Inception\",\"description\":\"A mind-bending thriller\",\"mediaType\":\"MOVIE\",\"releaseYear\":2010,\"genres\":[\"Sci-Fi\",\"Thriller\"],\"ageRestriction\":13}'
+# Response will contain: "id":"SOME-UUID"
+# SET THIS: $MEDIA_ID = "SOME-UUID"
+$MEDIA_ID = "PASTE-ID-HERE"
+
+# Get All Media
+curl.exe -X GET http://localhost:8080/api/media `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Get Media by ID
+curl.exe -X GET http://localhost:8080/api/media/$MEDIA_ID `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Search Media by Title
+curl.exe -X GET "http://localhost:8080/api/media/search?title=Inception" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Filter by Genre
+curl.exe -X GET "http://localhost:8080/api/media?genre=Sci-Fi" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Filter by Type
+curl.exe -X GET "http://localhost:8080/api/media?type=MOVIE" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Filter by Year
+curl.exe -X GET "http://localhost:8080/api/media?year=2010" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Filter by Age Restriction
+curl.exe -X GET "http://localhost:8080/api/media?age=13" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Sort by Rating
+curl.exe -X GET "http://localhost:8080/api/media?sort=rating" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Combined Filters
+curl.exe -X GET "http://localhost:8080/api/media?genre=Sci-Fi&type=MOVIE&sort=rating" `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Update Media (Owner)
+curl.exe -X PUT http://localhost:8080/api/media/$MEDIA_ID `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN1" `
+  -d '{\"title\":\"Inception - Updated\",\"description\":\"Updated description\",\"mediaType\":\"MOVIE\",\"releaseYear\":2010,\"genres\":[\"Sci-Fi\",\"Action\"],\"ageRestriction\":16}'
+
+# Update Media by Non-Owner (should fail)
+curl.exe -X PUT http://localhost:8080/api/media/$MEDIA_ID `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN2" `
+  -d '{\"title\":\"Hacked Title\",\"description\":\"Should not work\",\"mediaType\":\"MOVIE\",\"releaseYear\":2010,\"genres\":[\"Action\"],\"ageRestriction\":12}'
+
+## ===================================
+## 3. RATINGS
+## ===================================
+
+# Create Rating (SAVE THE RATING_ID from response!)
+curl.exe -X POST http://localhost:8080/api/ratings `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN2" `
+  -d "{\"mediaId\":\"$MEDIA_ID\",\"stars\":5,\"comment\":\"Amazing movie! Highly recommend!\"}"
+# Response will contain: "id":"SOME-UUID"
+# SET THIS: $RATING_ID = "SOME-UUID"
+$RATING_ID = "PASTE-RATING-ID-HERE"
+
+# Create Duplicate Rating (should fail - user can only rate once)
+curl.exe -X POST http://localhost:8080/api/ratings `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN2" `
+  -d "{\"mediaId\":\"$MEDIA_ID\",\"stars\":3,\"comment\":\"Duplicate rating\"}"
+
+# Create Rating with Invalid Stars (should fail)
+curl.exe -X POST http://localhost:8080/api/ratings `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN1" `
+  -d "{\"mediaId\":\"$MEDIA_ID\",\"stars\":6,\"comment\":\"Invalid rating\"}"
+
+# Get Ratings for Media
+curl.exe -X GET http://localhost:8080/api/ratings/media/$MEDIA_ID `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Update Rating
+curl.exe -X PUT http://localhost:8080/api/ratings/$RATING_ID `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN2" `
+  -d '{\"stars\":4,\"comment\":\"Updated comment - still great but not perfect\"}'
+
+# Confirm Rating (make comment public)
+curl.exe -X POST http://localhost:8080/api/ratings/$RATING_ID/confirm `
+  -H "Authorization: Bearer $TOKEN2"
+
+# Like a Rating (User 1 likes User 2's rating)
+curl.exe -X POST http://localhost:8080/api/ratings/$RATING_ID/like `
+  -H "Authorization: Bearer $TOKEN1"
+
+## ===================================
+## 4. FAVORITES
+## ===================================
+
+# Add to Favorites
+curl.exe -X POST http://localhost:8080/api/favorites `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $TOKEN1" `
+  -d "{\"mediaId\":\"$MEDIA_ID\"}"
+
+# Get User Favorites
+curl.exe -X GET http://localhost:8080/api/favorites `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Remove from Favorites
+curl.exe -X DELETE http://localhost:8080/api/favorites/$MEDIA_ID `
+  -H "Authorization: Bearer $TOKEN1"
+
+## ===================================
+## 5. USER PROFILE & LEADERBOARD
+## ===================================
+
+# Get User Profile
+curl.exe -X GET http://localhost:8080/api/users/testuser1/profile `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Get Leaderboard
+curl.exe -X GET http://localhost:8080/api/users/leaderboard `
+  -H "Authorization: Bearer $TOKEN1"
+
+## ===================================
+## 6. RECOMMENDATIONS
+## ===================================
+
+# Get Recommendations
+curl.exe -X GET http://localhost:8080/api/recommendations `
+  -H "Authorization: Bearer $TOKEN1"
+
+# Get Recommendations with Limit
+curl.exe -X GET http://localhost:8080/api/recommendations?limit=5 `
+  -H "Authorization: Bearer $TOKEN1"
+
+## ===================================
+## 7. CLEANUP
+## ===================================
+
+# Delete Rating
+curl.exe -X DELETE http://localhost:8080/api/ratings/$RATING_ID `
+  -H "Authorization: Bearer $TOKEN2"
+
+# Delete Media
+curl.exe -X DELETE http://localhost:8080/api/media/$MEDIA_ID `
+  -H "Authorization: Bearer $TOKEN1"
+
+## ===================================
+## QUICK REFERENCE
+## ===================================
+
+# After running the commands, set these variables:
+# $TOKEN1 = "testuser1-mrpToken"
+# $TOKEN2 = "testuser2-mrpToken"
+# $MEDIA_ID = "<from create media response>"
+# $RATING_ID = "<from create rating response>"
+
+# PowerShell Tips:
+# - Use ` (backtick) for line continuation
+# - Use curl.exe not curl (curl is alias for Invoke-WebRequest)
+# - Use \" to escape quotes inside strings
+# - Variables: $TOKEN1, $MEDIA_ID etc.
