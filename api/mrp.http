@@ -1,13 +1,12 @@
 ### ==========================================
-### MRP API - Complete Test Collection
-### Run these IN ORDER from top to bottom!
+### MRP API
 ### ==========================================
 
 ### ====================
-### 1. USER SETUP
+### 1. AUTH
 ### ====================
 
-### 1.1 Register User
+### Register User
 POST http://localhost:8080/api/users/register
 Content-Type: application/json
 
@@ -18,7 +17,7 @@ Content-Type: application/json
 
 ###
 
-### 1.2 Login User
+### Login User
 POST http://localhost:8080/api/users/login
 Content-Type: application/json
 
@@ -35,149 +34,144 @@ Content-Type: application/json
 ###
 
 ### ====================
-### 2. CREATE MEDIA (Run all 3)
+### 2. USER
 ### ====================
 
-### 2.1 Create Movie
+### Get Profile
+GET http://localhost:8080/api/users/user1/profile
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Update Profile
+PUT http://localhost:8080/api/users/USER_ID_HERE/profile
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "favoriteGenre": "sci-fi"
+}
+
+###
+
+### Get Leaderboard
+GET http://localhost:8080/api/users/leaderboard
+Authorization: Bearer {{auth_token}}
+
+###
+
+### ====================
+### 3. MEDIA
+### ====================
+
+### Create Media Entry
 POST http://localhost:8080/api/media
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
   "title": "Inception",
-  "description": "Sci-fi thriller about dreams",
+  "description": "Sci-fi thriller",
   "mediaType": "MOVIE",
   "releaseYear": 2010,
-  "genres": ["sci-fi", "thriller"],
+  "genres": [
+    "sci-fi",
+    "thriller"
+  ],
   "ageRestriction": 12
 }
 
 > {%
     client.global.set("media_id", response.body.id);
-    client.log("✓ Movie created: " + response.body.id);
+    client.log("✓ Media created: " + response.body.id);
 %}
 
 ###
 
-### 2.2 Create Series
-POST http://localhost:8080/api/media
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "title": "Breaking Bad",
-  "description": "Crime drama series",
-  "mediaType": "SERIES",
-  "releaseYear": 2008,
-  "genres": ["drama", "crime"],
-  "ageRestriction": 18
-}
-
-> {%
-    client.global.set("series_id", response.body.id);
-    client.log("✓ Series created: " + response.body.id);
-%}
-
-###
-
-### 2.3 Create Game
-POST http://localhost:8080/api/media
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "title": "The Last of Us",
-  "description": "Post-apocalyptic action game",
-  "mediaType": "GAME",
-  "releaseYear": 2013,
-  "genres": ["action", "adventure"],
-  "ageRestriction": 18
-}
-
-> {%
-    client.global.set("game_id", response.body.id);
-    client.log("✓ Game created: " + response.body.id);
-%}
-
-###
-
-### ====================
-### 3. VIEW MEDIA
-### ====================
-
-### 3.1 Get All Media
+### Get All Media
 GET http://localhost:8080/api/media
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.2 Get Specific Media
+### Get Media by ID
 GET http://localhost:8080/api/media/{{media_id}}
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.3 Search by Title
+### Search Media by Title
 GET http://localhost:8080/api/media/search?title=incep
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.4 Filter by Genre
+### Filter by Genre
 GET http://localhost:8080/api/media?genre=sci-fi
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.5 Filter by Type (Movies only)
+### Filter by Type
 GET http://localhost:8080/api/media?type=MOVIE
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.6 Sort by Rating
+### Filter by Year
+GET http://localhost:8080/api/media?year=2010
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Filter by Age Restriction
+GET http://localhost:8080/api/media?age=13
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Sort by Rating
 GET http://localhost:8080/api/media?sort=rating
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 3.7 Combined Filter (Action movies, sorted by rating)
-GET http://localhost:8080/api/media?genre=action&type=MOVIE&sort=rating
+### Combined Filters
+GET http://localhost:8080/api/media?genre=sci-fi&type=MOVIE&sort=rating
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### ====================
-### 4. UPDATE/DELETE MEDIA
-### ====================
-
-### 4.1 Update Media
+### Update Media Entry
 PUT http://localhost:8080/api/media/{{media_id}}
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "title": "Inception (Updated)",
+  "title": "Inception Updated",
   "description": "Updated description",
   "mediaType": "MOVIE",
   "releaseYear": 2010,
-  "genres": ["sci-fi", "action"],
+  "genres": [
+    "sci-fi",
+    "action"
+  ],
   "ageRestriction": 16
 }
 
 ###
 
-### 4.2 Delete Game (can only delete your own media)
-DELETE http://localhost:8080/api/media/{{game_id}}
+### Delete Media Entry
+DELETE http://localhost:8080/api/media/{{media_id}}
 Authorization: Bearer {{auth_token}}
 
 ###
 
 ### ====================
-### 5. RATINGS (Run 5.1 first!)
+### 4. RATING
 ### ====================
 
-### 5.1 Create Rating ⚠️ RUN THIS FIRST!
+### Create Rating
 POST http://localhost:8080/api/ratings
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
@@ -189,96 +183,59 @@ Content-Type: application/json
 }
 
 > {%
-    client.global.set("rating_id", response.body.id);
+    client.global.set("ratings_id", response.body.id);
     client.log("✓ Rating created: " + response.body.id);
 %}
 
 ###
 
-### 5.2 Get Ratings for Media
+### Get Ratings for Media
 GET http://localhost:8080/api/ratings/media/{{media_id}}
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 5.3 Update Rating (only after 5.1!)
+### Get Ratings by User
+GET http://localhost:8080/api/ratings/user/USER_ID_HERE
+Authorization: Bearer {{auth_token}}
+
+###
+
+### Update Rating
 PUT http://localhost:8080/api/ratings/{{rating_id}}
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
   "stars": 4,
-  "comment": "Changed my mind, still great!"
+  "comment": "Updated comment"
 }
 
 ###
 
-### 5.4 Confirm Rating Comment (make it public)
+### Confirm Rating Comment
 POST http://localhost:8080/api/ratings/{{rating_id}}/confirm
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### ====================
-### 6. SECOND USER (for testing likes)
-### ====================
-
-### 6.1 Register User 2
-POST http://localhost:8080/api/users/register
-Content-Type: application/json
-
-{
-  "username": "user2",
-  "password": "pass456"
-}
-
-###
-
-### 6.2 Login User 2
-POST http://localhost:8080/api/users/login
-Content-Type: application/json
-
-{
-  "username": "user2",
-  "password": "pass456"
-}
-
-> {%
-    client.global.set("auth_token2", response.body.token);
-    client.log("✓ User2 token saved: " + response.body.token);
-%}
-
-###
-
-### 6.3 User2 Likes User1's Rating
+### Like Rating
 POST http://localhost:8080/api/ratings/{{rating_id}}/like
-Authorization: Bearer {{auth_token2}}
+Authorization: Bearer user2-mrpToken
 
 ###
 
-### 6.4 User2 Creates Their Own Rating
-POST http://localhost:8080/api/ratings
-Authorization: Bearer {{auth_token2}}
-Content-Type: application/json
-
-{
-  "mediaId": "{{series_id}}",
-  "stars": 5,
-  "comment": "Best series ever!"
-}
-
-> {%
-    client.global.set("rating_id2", response.body.id);
-    client.log("✓ User2 rating created: " + response.body.id);
-%}
+### Delete Rating
+DELETE http://localhost:8080/api/ratings/{{rating_id}}
+Authorization: Bearer {{auth_token}}
 
 ###
 
 ### ====================
-### 7. FAVORITES
+### 5. FAVORITES
 ### ====================
 
-### 7.1 Add to Favorites
+### Add to Favorites
 POST http://localhost:8080/api/favorites
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
@@ -289,77 +246,30 @@ Content-Type: application/json
 
 ###
 
-### 7.2 Add Series to Favorites
-POST http://localhost:8080/api/favorites
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "mediaId": "{{series_id}}"
-}
-
-###
-
-### 7.3 Get All Favorites
+### Get User Favorites
 GET http://localhost:8080/api/favorites
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 7.4 Remove from Favorites
+### Remove from Favorites
 DELETE http://localhost:8080/api/favorites/{{media_id}}
 Authorization: Bearer {{auth_token}}
 
 ###
 
 ### ====================
-### 8. RECOMMENDATIONS
+### 6. RECOMMENDATION
 ### ====================
 
-### 8.1 Get Recommendations
+### Get Recommendations
 GET http://localhost:8080/api/recommendations
 Authorization: Bearer {{auth_token}}
 
 ###
 
-### 8.2 Get Recommendations (limited to 5)
+### Get Recommendations (Limited)
 GET http://localhost:8080/api/recommendations?limit=5
 Authorization: Bearer {{auth_token}}
 
 ###
-
-### ====================
-### 9. USER PROFILE & LEADERBOARD
-### ====================
-
-### 9.1 Get User Profile
-GET http://localhost:8080/api/users/user1/profile
-Authorization: Bearer {{auth_token}}
-
-###
-
-### 9.2 Get Leaderboard
-GET http://localhost:8080/api/users/leaderboard
-Authorization: Bearer {{auth_token}}
-
-###
-
-### ====================
-### 10. DELETE OPERATIONS
-### ====================
-
-### 10.1 Delete Rating
-DELETE http://localhost:8080/api/ratings/{{rating_id2}}
-Authorization: Bearer {{auth_token2}}
-
-###
-
-### ==========================================
-### TROUBLESHOOTING
-### ==========================================
-### If you get "unsubstituted variable" errors:
-### 1. Run requests from TOP TO BOTTOM in order
-### 2. Make sure you see "✓ Token saved" etc. in console
-### 3. Check the Run panel for saved variables
-### 4. If stuck, restart from step 1 (Register User)
-### ==========================================

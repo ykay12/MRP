@@ -258,6 +258,6 @@ echo - Wrong password: 401 Unauthorized
 echo - Duplicate operations: 400 Bad Request
 echo - Non-owner edits: 403 Forbidden
 echo.
-echo If all tests show expected codes, your API works correctly!
+echo If all tests show expected codes, the API works correctly
 echo.
 pause
